@@ -8,7 +8,7 @@ import (
 func TestTreeNode(t *testing.T) {
 	root := &treeNode{name: "/", children: make([]*treeNode, 0)}
 	root.Put("/user/get/:id")
-	root.Put("/user/create/hello")
+	root.Put("/user/**/hello")
 	root.Put("/user/create/aaa")
 	root.Put("/order/get/aaa")
 
