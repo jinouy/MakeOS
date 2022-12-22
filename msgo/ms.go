@@ -2,6 +2,8 @@ package msgo
 
 import (
 	"fmt"
+	"github.com/jinouy/msgo/render"
+	"html/template"
 	"log"
 	"net/http"
 )
@@ -106,16 +108,30 @@ func (r *routerGroup) Head(name string, handlerFunc HandlerFunc, middlewareFunc 
 
 type Engine struct {
 	*router
+	funcMap    template.FuncMap
+	HTMLRender render.HTMLRender
 }
 
 func New() *Engine {
 	return &Engine{
-		&router{},
+		router: &router{},
 	}
 }
 
-func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (e *Engine) SetFuncMap(funcMap template.FuncMap) {
+	e.funcMap = funcMap
+}
 
+func (e *Engine) LoadTemplate(pattern string) {
+	t := template.Must(template.New("").Funcs(e.funcMap).ParseGlob(pattern))
+	e.SetHtmlTemplate(t)
+}
+
+func (e *Engine) SetHtmlTemplate(t *template.Template) {
+	e.HTMLRender = render.HTMLRender{Template: t}
+}
+
+func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	e.HttpRequestHandle(w, r)
 }
 
@@ -126,8 +142,9 @@ func (e *Engine) HttpRequestHandle(w http.ResponseWriter, r *http.Request) {
 		node := g.treeNode.Get(routerName)
 		if node != nil && node.isEnd {
 			ctx := &Context{
-				W: w,
-				R: r,
+				W:      w,
+				R:      r,
+				engine: e,
 			}
 			handle, ok := g.handlerMap[node.routerName][ANY]
 			if ok {
