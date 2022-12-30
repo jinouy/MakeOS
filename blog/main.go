@@ -16,7 +16,10 @@ func Log(next msgo.HandlerFunc) msgo.HandlerFunc {
 }
 
 type User struct {
-	Name string
+	Name      string   `xml:"name" json:"name"`
+	Age       int      `xml:"age" json:"age" validate:"required,max=50,min=18"`
+	Addresses []string `json:"addresses"`
+	Email     string   `json:"email" msgo:"required"`
 }
 
 func main() {
@@ -110,6 +113,47 @@ func main() {
 	})
 	g.Get("/string", func(ctx *msgo.Context) {
 		ctx.String(http.StatusOK, "%s %s 开始学习如何搭建框架", "从零开始", "joy")
+	})
+
+	g.Get("/add", func(ctx *msgo.Context) {
+		name := ctx.GetDefaultQuery("name", "张三")
+		fmt.Printf("id:%v , ok: %v \n", name, true)
+	})
+	g.Get("/queryMap", func(ctx *msgo.Context) {
+		m, _ := ctx.GetQueryMap("user")
+		ctx.JSON(http.StatusOK, m)
+	})
+	g.Post("/formPost", func(ctx *msgo.Context) {
+		m, _ := ctx.GetPostFormMap("user")
+		//file := ctx.FormFile("file")
+		//err := ctx.SaveUploadFile(file, "./upload/"+file.Filename)
+		//if err != nil {
+		//	log.Println(err)
+		//}
+		files := ctx.FormFiles("file")
+		for _, file := range files {
+			ctx.SaveUploadFile(file, "./upload/"+file.Filename)
+		}
+		ctx.JSON(http.StatusOK, m)
+	})
+
+	g.Post("/jsonParam", func(ctx *msgo.Context) {
+		user := make([]User, 0)
+		ctx.DisallowUnknownFields = true
+		ctx.IsValidate = true
+		err := ctx.BindJson(&user)
+		if err == nil {
+			ctx.JSON(http.StatusOK, user)
+		} else {
+			log.Println(err)
+		}
+	})
+
+	g.Post("/xmlParam", func(ctx *msgo.Context) {
+		user := &User{}
+		err := ctx.BindXML(user)
+		log.Println(err)
+		ctx.JSON(http.StatusOK, user)
 	})
 	engine.Run()
 

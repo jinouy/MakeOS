@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sync"
 )
 
 const ANY = "ANY"
@@ -110,12 +111,21 @@ type Engine struct {
 	*router
 	funcMap    template.FuncMap
 	HTMLRender render.HTMLRender
+	Pool       sync.Pool
 }
 
 func New() *Engine {
-	return &Engine{
+	engine := &Engine{
 		router: &router{},
 	}
+	engine.Pool.New = func() any {
+		return engine.allocateContext()
+	}
+	return engine
+}
+
+func (e *Engine) allocateContext() any {
+	return &Context{engine: e}
 }
 
 func (e *Engine) SetFuncMap(funcMap template.FuncMap) {
@@ -132,20 +142,20 @@ func (e *Engine) SetHtmlTemplate(t *template.Template) {
 }
 
 func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	e.HttpRequestHandle(w, r)
+	ctx := e.Pool.Get().(*Context)
+	ctx.W = w
+	ctx.R = r
+	e.HttpRequestHandle(ctx, w, r)
+	e.Pool.Put(ctx)
 }
 
-func (e *Engine) HttpRequestHandle(w http.ResponseWriter, r *http.Request) {
+func (e *Engine) HttpRequestHandle(ctx *Context, w http.ResponseWriter, r *http.Request) {
 
 	for _, g := range e.routerGroups {
-		routerName := SubStringLast(r.RequestURI, "/"+g.groupName)
+		routerName := SubStringLast(r.URL.Path, "/"+g.groupName)
 		node := g.treeNode.Get(routerName)
 		if node != nil && node.isEnd {
-			ctx := &Context{
-				W:      w,
-				R:      r,
-				engine: e,
-			}
+
 			handle, ok := g.handlerMap[node.routerName][ANY]
 			if ok {
 				g.methodHandle(node.routerName, ANY, handle, ctx)
