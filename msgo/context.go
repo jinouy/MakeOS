@@ -23,6 +23,7 @@ type Context struct {
 	formCache             url.Values
 	DisallowUnknownFields bool
 	IsValidate            bool
+	StatusCode            int
 }
 
 // http://xxx.com/user/add?id=1&age=20&username=张三
@@ -259,6 +260,7 @@ func (c *Context) String(status int, format string, values ...any) error {
 
 func (c *Context) Render(statusCode int, r render.Render) error {
 	err := r.Render(c.W)
+	c.StatusCode = statusCode
 	if statusCode != http.StatusOK {
 		c.W.WriteHeader(statusCode)
 	}

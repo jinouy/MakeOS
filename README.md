@@ -1,4 +1,3 @@
-# MakeOS
 
 # 参数处理
 ## 1. query参数
@@ -17,3 +16,12 @@ PostForm属性只包含了post表单参数。
 
 ## 3. 文件参数
 > 借助http.Request.FormFile
+
+# 错误处理
+>当程序发生异常的时候，比如panic程序直接就崩溃了，很明显在应用运行的过程中，不允许发生这样的事情，那么我们的框架就需要支持对这样问题的处理
+
+对这样问题的处理，我们很容易想到recover，他会捕获panic错误，同时我们应当在defer进行捕获，defer是一个先进后出的栈结构，在return之前执行
+
+<b>recover函数只在defer中生效</b>
+
+## 1. Recovery中间件

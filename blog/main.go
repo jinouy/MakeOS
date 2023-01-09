@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/jinouy/msgo"
+	msLog "github.com/jinouy/msgo/log"
 	"log"
 	"net/http"
 )
@@ -27,6 +28,7 @@ func main() {
 	engine := msgo.New()
 	g := engine.Group("user")
 
+	g.Use(msgo.Logging)
 	g.Use(func(next msgo.HandlerFunc) msgo.HandlerFunc {
 		return func(ctx *msgo.Context) {
 			fmt.Println("pre handle")
@@ -149,10 +151,22 @@ func main() {
 		}
 	})
 
+	logger := msLog.Default()
+	logger.Level = msLog.LevelDebug
+	logger.Formatter = &msLog.JsonFormatter{TimeDisplay: true}
+	//logger.Outs = append(logger.Outs, msLog.FileWriter("./log/log.log"))
+	logger.SetLogPath("./log")
+	logger.LogFileSize = 1 << 10
 	g.Post("/xmlParam", func(ctx *msgo.Context) {
 		user := &User{}
-		err := ctx.BindXML(user)
-		log.Println(err)
+		_ = ctx.BindXML(user)
+		logger.WithFields(msLog.Fields{
+			"name": "msgo",
+			"id":   1,
+		}).Debug("我是debug日志")
+
+		logger.Info("我是info日志")
+		logger.Error("我是error日志")
 		ctx.JSON(http.StatusOK, user)
 	})
 	engine.Run()
