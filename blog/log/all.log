@@ -1,0 +1,135 @@
+{"id":1,"log_level":"DEBUG","log_time":"2023/01/09 - 13:52:19","msg":"我是debug日志","name":"msgo"}
+{"log_level":"INFO","log_time":"2023/01/09 - 13:52:19","msg":"我是info日志"}
+{"log_level":"ERROR","log_time":"2023/01/09 - 13:52:19","msg":"我是error日志"}
+{"log_level":"ERROR","log_time":"2023/01/09 - 13:53:49","msg":"invalid memory address or nil pointer dereference"}
+[33m [msgo] [0m [34m2023/01/09 - 13:55:11[0m | level= [31m ERROR [0m | msg=[31m "invalid memory address or nil pointer dereference" [0m 
+[33m [msgo] [0m [34m2023/01/09 - 13:58:54[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  "invalid memory address or nil pointer dereference" [0m 
+[33m [msgo] [0m [34m2023/01/09 - 14:02:49[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  "invalid memory address or nil pointer dereference" [0m 
+[33m [msgo] [0m [34m2023/01/09 - 14:03:46[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  "invalid memory address or nil pointer dereference" [0m 
+[33m [msgo] [0m [34m2023/01/09 - 14:04:04[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  "invalid memory address or nil pointer dereference" [0m 
+[33m [msgo] [0m [34m2023/01/09 - 14:14:58[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  "invalid memory address or nil pointer dereference" [0m 
+[33m [msgo] [0m [34m2023/01/09 - 14:34:29[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  "runtime error: invalid memory address or nil pointer dereference\n\n\t/usr/local/go/src/runtime/panic.go:838\n\t/usr/local/go/src/runtime/panic.go:220\n\t/usr/local/go/src/runtime/panic.go:219\n\t/Users/joy/gowork/src/web/blog/main.go:161\n\t/Users/joy/gowork/src/web/msgo/log.go:111\n\t/Users/joy/gowork/src/web/msgo/recovery.go:34\n\t/Users/joy/gowork/src/web/blog/main.go:36\n\t/Users/joy/gowork/src/web/msgo/ms.go:48\n\t/Users/joy/gowork/src/web/msgo/ms.go:183\n\t/Users/joy/gowork/src/web/msgo/ms.go:164\n\t/usr/local/go/src/net/http/server.go:2463\n\t/usr/local/go/src/net/http/server.go:2917\n\t/usr/local/go/src/net/http/server.go:1967\n\t/usr/local/go/src/runtime/asm_amd64.s:1572" [0m 
+[33m [msgo] [0m [34m2023/01/09 - 14:35:13[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  runtime error: invalid memory address or nil pointer dereference
+
+	/usr/local/go/src/runtime/panic.go:838
+	/usr/local/go/src/runtime/panic.go:220
+	/usr/local/go/src/runtime/panic.go:219
+	/Users/joy/gowork/src/web/blog/main.go:161
+	/Users/joy/gowork/src/web/msgo/log.go:111
+	/Users/joy/gowork/src/web/msgo/recovery.go:34
+	/Users/joy/gowork/src/web/blog/main.go:36
+	/Users/joy/gowork/src/web/msgo/ms.go:48
+	/Users/joy/gowork/src/web/msgo/ms.go:183
+	/Users/joy/gowork/src/web/msgo/ms.go:164
+	/usr/local/go/src/net/http/server.go:2463
+	/usr/local/go/src/net/http/server.go:2917
+	/usr/local/go/src/net/http/server.go:1967
+	/usr/local/go/src/runtime/asm_amd64.s:1572 [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:10:25[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  runtime error: invalid memory address or nil pointer dereference
+
+	/usr/local/go/src/runtime/panic.go:838
+	/usr/local/go/src/runtime/panic.go:220
+	/usr/local/go/src/runtime/panic.go:219
+	/Users/joy/gowork/src/web/blog/main.go:163
+	/Users/joy/gowork/src/web/msgo/log.go:111
+	/Users/joy/gowork/src/web/msgo/recovery.go:44
+	/Users/joy/gowork/src/web/blog/main.go:38
+	/Users/joy/gowork/src/web/msgo/ms.go:48
+	/Users/joy/gowork/src/web/msgo/ms.go:183
+	/Users/joy/gowork/src/web/msgo/ms.go:164
+	/usr/local/go/src/net/http/server.go:2463
+	/usr/local/go/src/net/http/server.go:2917
+	/usr/local/go/src/net/http/server.go:1967
+	/usr/local/go/src/runtime/asm_amd64.s:1572 [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:12:27[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  runtime error: invalid memory address or nil pointer dereference
+
+	/usr/local/go/src/runtime/panic.go:838
+	/usr/local/go/src/runtime/panic.go:220
+	/usr/local/go/src/runtime/panic.go:219
+	/Users/joy/gowork/src/web/blog/main.go:163
+	/Users/joy/gowork/src/web/msgo/log.go:111
+	/Users/joy/gowork/src/web/msgo/recovery.go:44
+	/Users/joy/gowork/src/web/blog/main.go:38
+	/Users/joy/gowork/src/web/msgo/ms.go:48
+	/Users/joy/gowork/src/web/msgo/ms.go:183
+	/Users/joy/gowork/src/web/msgo/ms.go:164
+	/usr/local/go/src/net/http/server.go:2463
+	/usr/local/go/src/net/http/server.go:2917
+	/usr/local/go/src/net/http/server.go:1967
+	/usr/local/go/src/runtime/asm_amd64.s:1572 [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:14:35[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  runtime error: invalid memory address or nil pointer dereference
+
+	/usr/local/go/src/runtime/panic.go:838
+	/usr/local/go/src/runtime/panic.go:220
+	/usr/local/go/src/runtime/panic.go:219
+	/Users/joy/gowork/src/web/blog/main.go:163
+	/Users/joy/gowork/src/web/msgo/log.go:111
+	/Users/joy/gowork/src/web/msgo/recovery.go:44
+	/Users/joy/gowork/src/web/blog/main.go:38
+	/Users/joy/gowork/src/web/msgo/ms.go:48
+	/Users/joy/gowork/src/web/msgo/ms.go:183
+	/Users/joy/gowork/src/web/msgo/ms.go:164
+	/usr/local/go/src/net/http/server.go:2463
+	/usr/local/go/src/net/http/server.go:2917
+	/usr/local/go/src/net/http/server.go:1967
+	/usr/local/go/src/runtime/asm_amd64.s:1572 [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:17:40[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  runtime error: invalid memory address or nil pointer dereference
+
+	/usr/local/go/src/runtime/panic.go:838
+	/usr/local/go/src/runtime/panic.go:220
+	/usr/local/go/src/runtime/panic.go:219
+	/Users/joy/gowork/src/web/blog/main.go:163
+	/Users/joy/gowork/src/web/msgo/log.go:111
+	/Users/joy/gowork/src/web/msgo/recovery.go:44
+	/Users/joy/gowork/src/web/blog/main.go:38
+	/Users/joy/gowork/src/web/msgo/ms.go:48
+	/Users/joy/gowork/src/web/msgo/ms.go:183
+	/Users/joy/gowork/src/web/msgo/ms.go:164
+	/usr/local/go/src/net/http/server.go:2463
+	/usr/local/go/src/net/http/server.go:2917
+	/usr/local/go/src/net/http/server.go:1967
+	/usr/local/go/src/runtime/asm_amd64.s:1572 [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:19:59[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  runtime error: invalid memory address or nil pointer dereference
+
+	/usr/local/go/src/runtime/panic.go:838
+	/usr/local/go/src/runtime/panic.go:220
+	/usr/local/go/src/runtime/panic.go:219
+	/Users/joy/gowork/src/web/blog/main.go:163
+	/Users/joy/gowork/src/web/msgo/log.go:111
+	/Users/joy/gowork/src/web/msgo/recovery.go:43
+	/Users/joy/gowork/src/web/blog/main.go:38
+	/Users/joy/gowork/src/web/msgo/ms.go:48
+	/Users/joy/gowork/src/web/msgo/ms.go:183
+	/Users/joy/gowork/src/web/msgo/ms.go:164
+	/usr/local/go/src/net/http/server.go:2463
+	/usr/local/go/src/net/http/server.go:2917
+	/usr/local/go/src/net/http/server.go:1967
+	/usr/local/go/src/runtime/asm_amd64.s:1572 [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:27:50[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:30:17[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:30:45[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:31:40[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:37:06[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:50:25[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 16:59:07[0m | level= [34m DEBUG [0m 
+ msg:  我是debug日志 [0m name=msgo,id=1
+[33m [msgo] [0m [34m2023/01/09 - 16:59:07[0m | level= [32m INFO [0m 
+ msg:  我是info日志 [0m 

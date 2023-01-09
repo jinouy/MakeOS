@@ -1,0 +1,17 @@
+[33m [msgo] [0m [34m2023/01/09 - 15:20:15[0m | level= [31m ERROR [0m [31m
+ Error Cause By:  runtime error: invalid memory address or nil pointer dereference
+
+	/usr/local/go/src/runtime/panic.go:838
+	/usr/local/go/src/runtime/panic.go:220
+	/usr/local/go/src/runtime/panic.go:219
+	/Users/joy/gowork/src/web/blog/main.go:163
+	/Users/joy/gowork/src/web/msgo/log.go:111
+	/Users/joy/gowork/src/web/msgo/recovery.go:43
+	/Users/joy/gowork/src/web/blog/main.go:38
+	/Users/joy/gowork/src/web/msgo/ms.go:48
+	/Users/joy/gowork/src/web/msgo/ms.go:183
+	/Users/joy/gowork/src/web/msgo/ms.go:164
+	/usr/local/go/src/net/http/server.go:2463
+	/usr/local/go/src/net/http/server.go:2917
+	/usr/local/go/src/net/http/server.go:1967
+	/usr/local/go/src/runtime/asm_amd64.s:1572 [0m 

@@ -1,0 +1,19 @@
+{"log_level":"INFO","log_time":"2023/01/09 - 13:52:19","msg":"我是info日志"}
+[33m [msgo] [0m [34m2023/01/09 - 15:27:50[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:29:58[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:30:17[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:30:45[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:31:40[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:37:06[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 15:50:25[0m | level= [32m INFO [0m 
+ msg:  a error [0m 
+[33m [msgo] [0m [34m2023/01/09 - 16:59:07[0m | level= [32m INFO [0m 
+ msg:  我是info日志 [0m 
+[33m [msgo] [0m [34m2023/01/09 - 16:59:07[0m | level= [32m INFO [0m 
+ msg:  a error [0m 

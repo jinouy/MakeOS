@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jinouy/msgo"
 	msLog "github.com/jinouy/msgo/log"
+	"github.com/jinouy/msgo/mserror"
 	"log"
 	"net/http"
 )
@@ -25,10 +27,18 @@ type User struct {
 
 func main() {
 
-	engine := msgo.New()
+	engine := msgo.Default()
+	engine.RegisterErrorHandler(func(err error) (int, any) {
+		switch e := err.(type) {
+		case *BlogResponse:
+			return http.StatusOK, e.Response()
+		default:
+			return http.StatusInternalServerError, "500 error"
+		}
+	})
 	g := engine.Group("user")
+	//g.Use(msgo.Logging, msgo.Recovery)
 
-	g.Use(msgo.Logging)
 	g.Use(func(next msgo.HandlerFunc) msgo.HandlerFunc {
 		return func(ctx *msgo.Context) {
 			fmt.Println("pre handle")
@@ -151,24 +161,94 @@ func main() {
 		}
 	})
 
-	logger := msLog.Default()
-	logger.Level = msLog.LevelDebug
-	logger.Formatter = &msLog.JsonFormatter{TimeDisplay: true}
+	engine.Logger.Level = msLog.LevelDebug
+	//engine.Logger.Formatter = &msLog.JsonFormatter{TimeDisplay: true}
 	//logger.Outs = append(logger.Outs, msLog.FileWriter("./log/log.log"))
-	logger.SetLogPath("./log")
-	logger.LogFileSize = 1 << 10
+	engine.Logger.SetLogPath("./log")
+	engine.Logger.LogFileSize = 1 << 10
+
 	g.Post("/xmlParam", func(ctx *msgo.Context) {
 		user := &User{}
 		_ = ctx.BindXML(user)
-		logger.WithFields(msLog.Fields{
-			"name": "msgo",
-			"id":   1,
-		}).Debug("我是debug日志")
-
-		logger.Info("我是info日志")
-		logger.Error("我是error日志")
-		ctx.JSON(http.StatusOK, user)
+		//ctx.Logger.WithFields(msLog.Fields{
+		//	"name": "msgo",
+		//	"id":   1,
+		//}).Debug("我是debug日志")
+		//
+		//ctx.Logger.Info("我是info日志")
+		//ctx.Logger.Error("我是error日志")
+		//err := mserror.Default()
+		//err.Result(func(msError *mserror.MsError) {
+		//	ctx.Logger.Info(msError.Error())
+		//	ctx.JSON(http.StatusInternalServerError, user)
+		//})
+		//a(1, err)
+		//b(1, err)
+		//c(1, err)
+		//ctx.JSON(http.StatusOK, user)
+		err := login()
+		ctx.HandleWithError(http.StatusOK, user, err)
 	})
 	engine.Run()
 
+}
+
+type BlogResponse struct {
+	Success bool
+	Code    int
+	Data    any
+	Msg     string
+}
+
+type BlogNoDataResponse struct {
+	Success bool
+	Code    int
+	Msg     string
+}
+
+func (b *BlogResponse) Error() string {
+	return b.Msg
+}
+
+func (b *BlogResponse) Response() any {
+	if b.Data == nil {
+		return &BlogNoDataResponse{
+			Success: false,
+			Code:    -999,
+			Msg:     "账号密码错误",
+		}
+	}
+	return b
+}
+
+func login() *BlogResponse {
+	return &BlogResponse{
+		Success: false,
+		Code:    -999,
+		Data:    nil,
+		Msg:     "账号密码错误",
+	}
+}
+
+func a(param int, msError *mserror.MsError) {
+	if param == 1 {
+		// 发生错误的时候，放入一个地方 然后进行统一处理
+		err := errors.New("a error")
+		msError.Put(err)
+	}
+}
+
+func b(param int, msError *mserror.MsError) {
+	if param == 1 {
+
+		err := errors.New("a error")
+		msError.Put(err)
+	}
+}
+
+func c(param int, msError *mserror.MsError) {
+	if param == 1 {
+		err := errors.New("a error")
+		msError.Put(err)
+	}
 }

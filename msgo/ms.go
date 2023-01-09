@@ -2,6 +2,7 @@ package msgo
 
 import (
 	"fmt"
+	msLog "github.com/jinouy/msgo/log"
 	"github.com/jinouy/msgo/render"
 	"html/template"
 	"log"
@@ -53,18 +54,20 @@ func (r *routerGroup) methodHandle(name string, method string, h HandlerFunc, ct
 
 type router struct {
 	routerGroups []*routerGroup
+	engine       *Engine
 }
 
 func (r *router) Group(name string) *routerGroup {
-	g := &routerGroup{
+	routerGroup := &routerGroup{
 		groupName:          name,
 		handlerMap:         make(map[string]map[string]HandlerFunc),
 		middlewaresFuncMap: make(map[string]map[string][]MiddlewareFunc),
 		handlerMethodMap:   make(map[string][]string),
 		treeNode:           &treeNode{name: "/", children: make([]*treeNode, 0)},
 	}
-	r.routerGroups = append(r.routerGroups, g)
-	return g
+	routerGroup.Use(r.engine.middles...)
+	r.routerGroups = append(r.routerGroups, routerGroup)
+	return routerGroup
 }
 
 func (r *routerGroup) handle(name string, method string, handlerFunc HandlerFunc, middlewareFunc ...MiddlewareFunc) {
@@ -107,11 +110,16 @@ func (r *routerGroup) Head(name string, handlerFunc HandlerFunc, middlewareFunc 
 	r.handle(name, http.MethodHead, handlerFunc, middlewareFunc...)
 }
 
+type ErrorHandler func(err error) (int, any)
+
 type Engine struct {
 	*router
-	funcMap    template.FuncMap
-	HTMLRender render.HTMLRender
-	Pool       sync.Pool
+	funcMap      template.FuncMap
+	HTMLRender   render.HTMLRender
+	Pool         sync.Pool
+	Logger       *msLog.Logger
+	middles      []MiddlewareFunc
+	errorHandler ErrorHandler
 }
 
 func New() *Engine {
@@ -121,6 +129,14 @@ func New() *Engine {
 	engine.Pool.New = func() any {
 		return engine.allocateContext()
 	}
+	return engine
+}
+
+func Default() *Engine {
+	engine := New()
+	engine.Logger = msLog.Default()
+	engine.Use(Logging, Recovery)
+	engine.router.engine = engine
 	return engine
 }
 
@@ -145,7 +161,9 @@ func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := e.Pool.Get().(*Context)
 	ctx.W = w
 	ctx.R = r
+	ctx.Logger = e.Logger
 	e.HttpRequestHandle(ctx, w, r)
+
 	e.Pool.Put(ctx)
 }
 
@@ -185,4 +203,12 @@ func (e *Engine) Run() {
 		log.Fatal(err)
 	}
 
+}
+
+func (e *Engine) Use(middles ...MiddlewareFunc) {
+	e.middles = middles
+}
+
+func (e *Engine) RegisterErrorHandler(handler ErrorHandler) {
+	e.errorHandler = handler
 }

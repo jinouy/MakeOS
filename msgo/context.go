@@ -3,6 +3,7 @@ package msgo
 import (
 	"errors"
 	"github.com/jinouy/msgo/binding"
+	msLog "github.com/jinouy/msgo/log"
 	"github.com/jinouy/msgo/render"
 	"html/template"
 	"io"
@@ -24,6 +25,7 @@ type Context struct {
 	DisallowUnknownFields bool
 	IsValidate            bool
 	StatusCode            int
+	Logger                *msLog.Logger
 }
 
 // http://xxx.com/user/add?id=1&age=20&username=张三
@@ -253,17 +255,14 @@ func (c *Context) Redirect(status int, url string) error {
 }
 
 func (c *Context) String(status int, format string, values ...any) error {
-	err := c.Render(status, &render.String{Format: format, Data: values})
-	c.W.WriteHeader(status)
-	return err
+	return c.Render(status, &render.String{Format: format, Data: values})
 }
 
 func (c *Context) Render(statusCode int, r render.Render) error {
-	err := r.Render(c.W)
+	// 如果设置了statusCode，对header的修改不生效了
+	err := r.Render(c.W, statusCode)
 	c.StatusCode = statusCode
-	if statusCode != http.StatusOK {
-		c.W.WriteHeader(statusCode)
-	}
+	// 多次调用 WriteHeader 就会产生这样的警告 superfluous response.WriteHeader
 	return err
 }
 
@@ -289,4 +288,17 @@ func (c *Context) MustBindWith(obj any, bind binding.Binding) error {
 func (c *Context) ShouldBind(obj any, bind binding.Binding) error {
 	return bind.Bind(c.R, obj)
 
+}
+
+func (c *Context) Fail(code int, msg string) {
+	c.String(code, msg)
+}
+
+func (c *Context) HandleWithError(statusCode int, obj any, err error) {
+	if err != nil {
+		code, data := c.engine.errorHandler(err)
+		c.JSON(code, data)
+		return
+	}
+	c.JSON(statusCode, obj)
 }
