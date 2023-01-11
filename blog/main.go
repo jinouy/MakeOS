@@ -6,8 +6,11 @@ import (
 	"github.com/jinouy/msgo"
 	msLog "github.com/jinouy/msgo/log"
 	"github.com/jinouy/msgo/mserror"
+	"github.com/jinouy/msgo/mspool"
 	"log"
 	"net/http"
+	"sync"
+	"time"
 )
 
 func Log(next msgo.HandlerFunc) msgo.HandlerFunc {
@@ -188,6 +191,44 @@ func main() {
 		//ctx.JSON(http.StatusOK, user)
 		err := login()
 		ctx.HandleWithError(http.StatusOK, user, err)
+	})
+	p, _ := mspool.NewPool(5)
+	g.Post("/pool", func(ctx *msgo.Context) {
+		currentTime := time.Now().UnixMilli()
+		var wg sync.WaitGroup
+		wg.Add(5)
+		p.Submit(func() {
+			defer func() {
+				wg.Done()
+			}()
+
+			fmt.Println("11111111")
+			panic("这是1111的panic")
+			time.Sleep(3 * time.Second)
+		})
+		p.Submit(func() {
+			fmt.Println("22222222")
+			time.Sleep(3 * time.Second)
+			wg.Done()
+		})
+		p.Submit(func() {
+			fmt.Println("33333333")
+			time.Sleep(3 * time.Second)
+			wg.Done()
+		})
+		p.Submit(func() {
+			fmt.Println("44444444")
+			time.Sleep(3 * time.Second)
+			wg.Done()
+		})
+		p.Submit(func() {
+			fmt.Println("55555555")
+			time.Sleep(3 * time.Second)
+			wg.Done()
+		})
+		wg.Wait()
+		fmt.Printf("time: %v \n", time.Now().UnixMilli()-currentTime)
+		ctx.JSON(http.StatusOK, "success")
 	})
 	engine.Run()
 
