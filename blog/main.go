@@ -7,6 +7,7 @@ import (
 	msLog "github.com/jinouy/msgo/log"
 	"github.com/jinouy/msgo/mserror"
 	"github.com/jinouy/msgo/mspool"
+	"github.com/jinouy/msgo/token"
 	"log"
 	"net/http"
 	"sync"
@@ -39,6 +40,15 @@ func main() {
 			return http.StatusInternalServerError, "500 error"
 		}
 	})
+	//fmt.Println(msgo.BasicAuth("joy", "123456"))
+	//auth := &msgo.Accounts{
+	//	Users: make(map[string]string),
+	//}
+	//auth.Users["joy"] = "123456"
+	//engine.Use(auth.BasicAuth)
+	jh := &token.JwtHandler{Key: []byte("123456")}
+	//为特定的中间件，需要指定不进行拦截的请求
+	engine.Use(jh.AuthInterceptor)
 	g := engine.Group("user")
 	//g.Use(msgo.Logging, msgo.Recovery)
 
@@ -230,8 +240,45 @@ func main() {
 		fmt.Printf("time: %v \n", time.Now().UnixMilli()-currentTime)
 		ctx.JSON(http.StatusOK, "success")
 	})
-	engine.Run()
+	g.Get("/login", func(ctx *msgo.Context) {
+		jwt := &token.JwtHandler{}
+		jwt.Key = []byte("123456")
+		jwt.SendCookie = true
+		jwt.TimeOut = 10 * time.Minute
+		jwt.RefreshTimeOut = 20 * time.Minute
+		jwt.Authenticator = func(ctx *msgo.Context) (map[string]any, error) {
+			data := make(map[string]any)
+			data["userId"] = 1
+			return data, nil
+		}
+		token, err := jwt.LoginHandler(ctx)
+		if err != nil {
+			log.Println(err)
+			ctx.JSON(http.StatusOK, err.Error())
+			return
+		}
+		ctx.JSON(http.StatusOK, token)
 
+	})
+	g.Get("/refresh", func(ctx *msgo.Context) {
+		jwt := &token.JwtHandler{}
+		jwt.Key = []byte("123456")
+		jwt.SendCookie = true
+		jwt.TimeOut = 10 * time.Minute
+		jwt.RefreshTimeOut = 20 * time.Minute
+		jwt.RefreshKey = []byte("blog_refresh_token")
+		ctx.Set(string(jwt.RefreshKey), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzM1MDgxNDIsImlhdCI6MTY3MzUwNjk0MiwidXNlcklkIjoxfQ.H7-0v0CTCDT7j6uuT2PpXw2Gw6qSPyZt4aI7TbdKrXs")
+		token, err := jwt.RefreshHandler(ctx)
+		if err != nil {
+			log.Println(err)
+			ctx.JSON(http.StatusOK, err.Error())
+			return
+		}
+		ctx.JSON(http.StatusOK, token)
+
+	})
+	//engine.Run()
+	engine.RunTLS(":8118", "key/server.pem", "key/server.key")
 }
 
 type BlogResponse struct {

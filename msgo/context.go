@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 )
 
 const defaultMultipartMemory = 32 << 20 //32M
@@ -26,6 +27,33 @@ type Context struct {
 	IsValidate            bool
 	StatusCode            int
 	Logger                *msLog.Logger
+	Keys                  map[string]any
+	mu                    sync.RWMutex
+	sameSite              http.SameSite
+}
+
+func (c *Context) SetSameSite(s http.SameSite) {
+	c.sameSite = s
+}
+
+func (c *Context) Set(key string, value any) {
+	c.mu.Lock()
+	if c.Keys == nil {
+		c.Keys = make(map[string]any)
+	}
+	c.Keys[key] = value
+	c.mu.Unlock()
+}
+
+func (c *Context) Get(key string) (value any, ok bool) {
+	c.mu.RLock()
+	value, ok = c.Keys[key]
+	c.mu.RUnlock()
+	return
+}
+
+func (c *Context) SetBasicAuth(username, password string) {
+	c.R.Header.Set("Authorization", "Basic"+BasicAuth(username, password))
 }
 
 // http://xxx.com/user/add?id=1&age=20&username=张三
@@ -301,4 +329,20 @@ func (c *Context) HandleWithError(statusCode int, obj any, err error) {
 		return
 	}
 	c.JSON(statusCode, obj)
+}
+
+func (c *Context) SetCookie(name, value string, maxAge int, path, domain string, secure, httpOnly bool) {
+	if path == "" {
+		path = "/"
+	}
+	http.SetCookie(c.W, &http.Cookie{
+		Name:     name,
+		Value:    url.QueryEscape(value),
+		MaxAge:   maxAge,
+		Path:     path,
+		Domain:   domain,
+		SameSite: c.sameSite,
+		Secure:   secure,
+		HttpOnly: httpOnly,
+	})
 }

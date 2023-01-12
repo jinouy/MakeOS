@@ -127,3 +127,171 @@ sync.Cond 是基于互斥锁/读写锁实现的条件变量，用来协调想要
 
 ### 2.8 异常处理
 >当task发生问题时，需要能捕获到，对外提供入口，让开发者自定义错误处理方式
+
+# 认证
+## 1.开启https支持
+```go
+func (e *Engine) RunTLS(addr, certFile, keyFile string){
+	err := http.ListenAndServeTLS(addr, certFile, keyFile, e.Handler())
+	if err != nil{
+		log.Fatal(err)
+    }
+}
+```
+
+### 1.1 测试
+* 生存私钥文件
+```shell
+## 需要输入密码
+openssl genrsa -des3 -out ca.key 2048
+```
+* 创建证书请求
+```shell
+openssl req -new -key ca.key -out ca.csr
+```
+*生成ca.crt
+```shell
+openssl x509 -req -days 365 -in ca.csr -signkey ca.key -out ca.crt
+```
+  
+找到openssl.cnf文件
+1. 打开copy_extensions = copy
+2. 打开req_extensions = v3_req
+3. 找到[v3_req]，添加subjectAltName = @alt_names
+4. 添加新的标签[alt_names]，和标签字段
+```markdown
+[alt_name]
+IP.1 = 127.0.0.1
+DNS.1 = *.joy.com
+```
+5. 生成证书私钥server.key
+```shell
+openssl genpkey -algorithm RSA -out server.key
+```
+6. 通过私钥server.key生成证书请求文件server.csr
+```shell
+openssl req -new -nodes -key server.key -out server.csr -days 3650 -config ./openssl.cnf -extensions v3_req
+```
+7. 生成SAN证书
+```shell
+openssl x509 -req -days 365 -in server.csr -out server.pem -CA ca.crt -CAkey ca.key -CAcreateserial 
+-extfile ./openssl.cnf -extensions v3_req
+```
+<b>postman</b>
+客户端需要生成对应的公钥和私钥
+私钥：
+```shell
+openssl genpkey -algorithm RSA -out client.key
+```
+证书:
+```shell
+openssl req -new -nodes -key client.key -out client.csr -days 3650 -config ./openssl.cnf -extensions v3_req
+```  
+SAN证书:
+```shell
+openssl x509 -req -days 365 -in client.csr -out client.pem -CA ca.crt -CAkey ca.key -CAcreateserial
+-extfile ./openssl.cnf -extensions v3_req
+```
+
+## 2.认证支持
+### 2.1 Basic认证
+Basic认证(基础认证)，是最简单的认证方式。它简单地将用户名：密码进行base64编码后，放到HTTP Authorization Header中。
+HTTP请求达到后端服务后，后端服务会解析出Authorization Header中的base64字符串，解析获取用户名和密码，并将用户名和密码跟数据库中记录的值进行比较，
+如果匹配则认证通过。  
+当base64并不是加密技术，所以这种认证方式并不安全，即使密码进行加密，攻击者也可以进行重放攻击。  
+<b>可以和SSL(可以理解为是HTTPS)一起使用保证其安全性</b>
+```shell
+Authorization: Basic ${basic}
+```
+
+### 2.1 Digest认证
+Digest认证(摘要认证)，是另一种HTTP认证协议，它与基本认证兼容，但修复了基本认证的严重缺陷。Digest具有如下特点：
+* 绝不会用明文方式在网络上发送密码。
+* 可以有效防止恶意用户进行重放攻击。
+* 可以有选择地防止对报文内容的篡改。  
+
+完成摘要认证需要下面这四步：
+* 客户端请求服务端的资源。
+* 在客户端能够证明它知道密码从而确认其身份之前，服务端认证失败，返回401 Unauthorized,并返回WWW-Authenticate头，里面包含认证需要的信息。
+* 客户端根据WWW-Authenticate头中的信息，选择加密算法，并使用密码随机数nonce，计算出密码摘要response，并再次请求服务端。
+* 服务器将客户端提供的密码摘要与服务器内部计算出的摘要进行对比。
+如果匹配，就说明客户端知道密码，认证通过，并返回一些与授权会话相关的附加信息，放到Authorization-Info中。    
+WWW-Authenticate头中包含的信息见下表：
+![image-20220628143858613](image/image-20220628143858613.png)    
+ 
+虽然使用摘要可以避免密码以明文方式发送，一定程度上保护了密码的安全性，但是仅仅隐藏密码并不能保证请求是安全的。
+因为请求(包括密码摘要)仍然可以被截获，这样就可以重放给服务器，带来安全问题。    
+
+为了防止重放攻击，服务器向客户端发送了密码随机数nonce，nonce每次请求都会变化。
+客户端会根据nonce生成密码摘要，这种方式，可以使摘要随着随机数的变化而变化。
+服务端收到的密码摘要只对特定的随机数有效，而没有密码的话，攻击者就无法计算出正确的摘要，这样我们就可以防止重放攻击。  
+
+摘要认证可以保护密码，比基本认证安全很多。但摘要认证并不能保护内容，所以仍然要与HTTPS配合使用，来确保通信安全。
+
+### 2.3 Bearer认证
+Bearer认证，也称为令牌认证，是一种HTTP身份验证方法。Bearer认证的核心是bearer token。  
+bearer token是一种加密字符串，通常由服务端根据密钥生成。客户端在请求服务端时，必须在请求头中包含Authorization:Bearer。
+服务端收到请求后，解析出，并校验的合法性，如果校验通过，则认证通过。跟Basic认证一样，Bearer认证需要配合HTTPS一起使用，来保证认证安全性。  
+
+当前最流行的token编码方式就是`JSON Web Token`
+
+#### 2.3.1 JWT
+JWT(全称：JSON Web Token)是一个开放标准(RFC 7519)，它定义了一种紧凑的、自包含的方式，用于作为JSON对象在各方之间安全地传输信息。
+该信息可以被验证和信任，因为它是数字签名的。  
+简单点说就是一种认证机制。
+JWT一般是这样一个字符串，分为三部分，以"."隔开：
+```shell
+A.B.C
+```
+
+##### Header
+A部分：  
+
+JWT第一部分是头部分，它是一个描述JWT元数据的Json对象
+```json
+{
+  "alg" : "HS256",
+  "typ" : "JWT"
+}
+```
+alg属性表示签名使用的算法，默认为HMAC SHA256(写为HS256)，typ属性表示令牌的类型，JWT令牌统一写为JWT。  
+
+最后，使用Base64 URL算法将上述JSON对象转换为字符串保存。
+
+##### Payload
+B部分：  
+
+JWT第二部分是Payload，也是一个Json对象，除了包含需要传递的数据，还有七个默认的字段供选择。  
+
+分别是  
+`iss: 发行人`、`exp:到期时间`、`sub:主题`、`aud:用户`、`nbf:在此之前不可用`、`iat:发布时间`、
+`jti:JWT ID用于标识该JWT`。  
+```json
+{
+  //默认字段
+  "sub" : "码神之路Go手写微服务框架教程",
+  //自定义字段
+  "name" : "码神之路",
+  "isAdmin" : "true",
+  "loginTime": "2022-06-28 12:00:03"
+}
+```
+##### Signature
+C部分：  
+
+JWT第三部分是签名。 
+
+首先需要指定一个secret，该secret仅仅保存在服务器中，保证不能让其他用户知道。
+Header指定的算法对Header和Payload进行计算，然后就得到一个签名哈希。也就是Signature。  
+
+那么Application Secret如何进行验证呢？可以利用JWT前两段，用同一套哈希算法和同一个secret计算一个签名值，
+然后把计算出来的签名值和收到的JWT第三段比较，如果相同则认证通过。  
+
+##### 使用JWT进行认证的步骤：
+* 客户端使用用户名和密码请求登录  
+
+* 服务端收到请求后，会去验证用户名和密码。如果用户名和密码跟数据库记录不一致，则验证失败；如果一致则验证通过，服务端会签发一个Token返回给客户端  
+ 
+* 客户端收到请求后会将Token缓存起来，比如放到浏览器Cookie中或者LocalStorage中，之后每次请求都会携带该Token  
+
+* 服务端收到请求后，会验证请求中的Token，验证通过则进行业务逻辑处理，处理完成后返回处理的结果  

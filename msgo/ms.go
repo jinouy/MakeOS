@@ -202,7 +202,13 @@ func (e *Engine) Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
 
+func (e *Engine) RunTLS(addr, certFile, keyFile string) {
+	err := http.ListenAndServeTLS(addr, certFile, keyFile, e.Handler())
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (e *Engine) Use(middles ...MiddlewareFunc) {
@@ -211,4 +217,8 @@ func (e *Engine) Use(middles ...MiddlewareFunc) {
 
 func (e *Engine) RegisterErrorHandler(handler ErrorHandler) {
 	e.errorHandler = handler
+}
+
+func (e *Engine) Handler() http.Handler {
+	return e
 }
