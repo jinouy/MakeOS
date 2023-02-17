@@ -3,6 +3,7 @@ package mspool
 import (
 	"errors"
 	"fmt"
+	"github.com/jinouy/msgo/config"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -43,6 +44,14 @@ type Pool struct {
 
 func NewPool(cap int) (*Pool, error) {
 	return NewTimePool(cap, DefaultExpire)
+}
+
+func NewPoolConf() (*Pool, error) {
+	cap, ok := config.Conf.Pool["cap"]
+	if !ok {
+		return nil, errors.New("cap config not exist")
+	}
+	return NewTimePool(int(cap.(int64)), DefaultExpire)
 }
 
 func NewTimePool(cap int, expire int) (*Pool, error) {

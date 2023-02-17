@@ -177,7 +177,6 @@ func main() {
 	engine.Logger.Level = msLog.LevelDebug
 	//engine.Logger.Formatter = &msLog.JsonFormatter{TimeDisplay: true}
 	//logger.Outs = append(logger.Outs, msLog.FileWriter("./log/log.log"))
-	engine.Logger.SetLogPath("./log")
 	engine.Logger.LogFileSize = 1 << 10
 
 	g.Post("/xmlParam", func(ctx *msgo.Context) {

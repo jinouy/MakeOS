@@ -2,6 +2,7 @@ package msgo
 
 import (
 	"fmt"
+	"github.com/jinouy/msgo/config"
 	msLog "github.com/jinouy/msgo/log"
 	"github.com/jinouy/msgo/render"
 	"html/template"
@@ -135,6 +136,10 @@ func New() *Engine {
 func Default() *Engine {
 	engine := New()
 	engine.Logger = msLog.Default()
+	logPath, ok := config.Conf.Log["path"]
+	if ok {
+		engine.Logger.SetLogPath(logPath.(string))
+	}
 	engine.Use(Logging, Recovery)
 	engine.router.engine = engine
 	return engine
@@ -151,6 +156,15 @@ func (e *Engine) SetFuncMap(funcMap template.FuncMap) {
 func (e *Engine) LoadTemplate(pattern string) {
 	t := template.Must(template.New("").Funcs(e.funcMap).ParseGlob(pattern))
 	e.SetHtmlTemplate(t)
+}
+
+func (e *Engine) LoadTemplateConf() {
+	pattern, ok := config.Conf.Template["pattern"]
+	if ok {
+		t := template.Must(template.New("").Funcs(e.funcMap).ParseGlob(pattern.(string)))
+		e.SetHtmlTemplate(t)
+	}
+
 }
 
 func (e *Engine) SetHtmlTemplate(t *template.Template) {
